@@ -28,7 +28,7 @@ class PostAdmin(admin.ModelAdmin):
     get_photo.short_description = 'Фото'
     list_display_links = ('id', 'title')
     search_fields = ('title',)
-    list_filter = ('category',)
+    list_filter = ('category', 'tag')
     readonly_fields = ('views', 'created_at', 'get_photo')
     fields = ('title', 'slug', 'category', 'tag', 'author', 'content', 'photo', 'get_photo', 'views', 'created_at')
 

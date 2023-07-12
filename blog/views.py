@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from .models import Category, Post, Tag
-
+from django.db.models import F
 
 class Home(ListView):
     model = Post
@@ -14,6 +14,19 @@ class Home(ListView):
         context['title'] = 'Classic Blog Design'
         return context
 
+class PostByTag(ListView):
+    template_name = 'blog/posts_by_cat.html'
+    context_object_name = 'posts'
+    paginate_by = 4
+    allow_empty = False
+
+    def get_queryset(self):
+        return Post.objects.filter(tag__slug=self.kwargs['slug'])
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Записи по тегу: ' + str(Tag.objects.get(slug=self.kwargs['slug']))
+        return context
 
 class PostByCategory(ListView):
     template_name = 'blog/posts_by_cat.html'
@@ -29,10 +42,14 @@ class PostByCategory(ListView):
         context['title'] = Category.objects.get(slug=self.kwargs['slug'])
         return context
 
+class GetPost(DetailView):
+    model = Post
+    template_name = 'blog/single.html'
+    context_object_name = 'post'
 
-def get_category(request, slug):
-    return render(request, template_name='blog/category.html')
-
-
-def get_post(request, slug):
-    return render(request, template_name='blog/category.html')
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        self.object.views = F('views') + 1
+        self.object.save()
+        self.object.refresh_from_db()
+        return context
